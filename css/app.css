@@ -1,0 +1,29 @@
+body {
+	background-color: #000;
+	color: lightgray;
+}
+
+button {
+	width: 99.3%;
+	margin:2% 1.6% 2% 0;
+
+}
+
+ .note-button {
+	width: 32%;
+	 margin-left: 0;
+	margin-right: 1.6%;
+	 color: black;
+}
+ .note-button:nth-child(4n+0){
+	 margin-right:0;
+
+ }
+.hertz-select {
+	margin-top: 20px;
+	margin-bottom: 10px;
+}
+.hertz-select label{
+	font-weight: 300;
+	margin-right: 10px;
+}
