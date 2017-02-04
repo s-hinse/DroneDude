@@ -1,6 +1,6 @@
 /**
  * DroneDude javascript
- * Version 1.0
+ * Version 1.1
  * Sven Hinse 12/2016
  * www.svenhinse.de
  */
@@ -15,17 +15,20 @@ var app = function() {
     var labels = [ 'C', 'C# / Db', 'D', 'D# / Eb', 'E', 'F', 'F# / Gb', 'G', 'G# / Ab', 'A', 'A# / Bb', 'B' ];
     //Array containing the filenames
     var files = [ 'c', 'c_sharp', 'd', 'd_sharp', 'e', 'f', 'f_sharp', 'g', 'g_sharp', 'a', 'a_sharp', 'b' ];
-    //audio object that plays the loop
-    var drone = new Audio();
-    //boolean, true if sound is playing
-    var isPlaying;
+    //2 audio objects that play and take turns
+    var drone = new Array( new Audio(), new Audio() );
+    //stores the index of the audio object being played, -1 if none is playing
+    var isPlaying = -1;
     //stores the jQuery object of the last clicked button
     var buttonPlaying;
 
     //stores the setInterval object for the loop
     var loopInterval;
 
-    show_buttons( labels, files );
+    //stores the SetInterval object for the crossfade
+    var fadeInterval;
+
+    showButtons( labels, files );
     addEventListeners();
 
     /**
@@ -34,19 +37,61 @@ var app = function() {
      * @param event
      */
     function noteButtonClickHandler( event ) {
-        if ( isPlaying ) {
-            stopSounds();
-        }
+
+        stopSounds();
+
         var file = event.target.getAttribute( 'data-note' );
         var path = './mp3/' + tuning + '/' + file + '.mp3';
-        drone.src = path;
-        drone.play();
-        isPlaying = true;
+        drone[ 0 ].src = path;
+        drone[ 1 ].src = path;
+        drone[ 0 ].play();
+        isPlaying = 0;
         buttonPlaying = $( event.target );
         buttonPlaying.addClass( 'btn-success' );
-        loopInterval = setInterval( function() {
-            drone.currentTime = 100;
-        }, 30000 )
+        loopInterval = setInterval( crossfade, 10000 )
+
+    }
+
+    /**
+     * crossfades the 2 audio objects
+     */
+
+    function crossfade() {
+
+        //check which of the 2 drones is playing
+        var isPaused = isPlaying == 1 ? 0 : 1;
+
+        //start the second drone silently
+        drone [ isPaused ].volume = 0;
+        drone [ isPaused ].currentTime = 0;
+        drone[ isPaused ].play();
+        var vol = 0;
+
+        //do the crossfade
+        fadeInterval = setInterval( function() {
+
+            //equal power crossfade, see: http://chimera.labs.oreilly.com/books/1234000001552/ch03.html#s03_2
+            drone[ isPaused ].volume = Math.cos( (
+                    1.0 - (
+                        vol / 100
+                    )
+                ) * 0.5 * Math.PI );
+            drone[ isPlaying ].volume = Math.cos( (
+                    vol / 100
+                ) * 0.5 * Math.PI );
+
+            vol++;
+            //after crossfade, reset drone that was playing and update "isPlaying" flag
+            if ( vol == 100 ) {
+                drone[isPlaying].pause();
+                console.log ("is paused"+isPaused);
+                console.log("crossfade");
+                console.log (drone[0].currentTime);
+                console.log (drone[1].currentTime);
+                isPlaying = isPaused;
+                clearInterval( fadeInterval );
+            }
+        }, 20 );
 
     }
 
@@ -72,7 +117,7 @@ var app = function() {
      * @param labels - The button texts.
      * @param files - The data-file attributes for the buttons.
      */
-    function show_buttons( labels, files ) {
+    function showButtons( labels, files ) {
         var buttonContainer = $( '#button-container' );
         for ( var i = 0; i < 12; i++ ) {
             var button = '<button type="button" class="note-button btn btn-lg" data-note ="' +
@@ -87,15 +132,20 @@ var app = function() {
     /**
      * stops the current sound,
      * removes color from pressed button
-     * removes the loopInterval timer
+     * removes the loopInterval and the fadeInterval timer
      */
     function stopSounds() {
-        clearInterval( loopInterval );
-        drone.pause();
-        drone.currentTime = 0;
-        buttonPlaying.removeClass( 'btn-success' );
-        isPlaying = false;
-
+        if ( isPlaying != -1 ) {
+            clearInterval( loopInterval );
+            clearInterval( fadeInterval );
+            drone.forEach( function( drone ) {
+                drone.pause();
+                drone.currentTime = 0;
+                drone.volume = 1;
+            } );
+            buttonPlaying.removeClass( 'btn-success' );
+            isPlaying = -1;
+        }
     }
 }( jQuery );
 
