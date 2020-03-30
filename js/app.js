@@ -8,25 +8,25 @@
 /**
  * The wrapper object for the app
  */
-var app = function() {
+const app = function() {
     //set the standard tuning value
-    var tuning = 440;
+    let tuning = 440;
     //Array containing the Button labels
     var labels = [ 'C', 'C# / Db', 'D', 'D# / Eb', 'E', 'F', 'F# / Gb', 'G', 'G# / Ab', 'A', 'A# / Bb', 'B' ];
     //Array containing the filenames
-    var files = [ 'c', 'c_sharp', 'd', 'd_sharp', 'e', 'f', 'f_sharp', 'g', 'g_sharp', 'a', 'a_sharp', 'b' ];
+  const files = [ 'c', 'c_sharp', 'd', 'd_sharp', 'e', 'f', 'f_sharp', 'g', 'g_sharp', 'a', 'a_sharp', 'b' ];
     //2 audio objects that play and take turns
-    var drone = new Array( new Audio(), new Audio() );
+    const drone = new Array( new Audio(), new Audio() );
     //stores the index of the audio object being played, -1 if none is playing
-    var isPlaying = -1;
+    let isPlaying = -1;
     //stores the jQuery object of the last clicked button
-    var buttonPlaying;
+    let buttonPlaying;
 
     //stores the setInterval object for the loop
-    var loopInterval;
+    let loopInterval;
 
     //stores the SetInterval object for the crossfade
-    var fadeInterval;
+    let fadeInterval;
 
     showButtons( labels, files );
     addEventListeners();
@@ -147,5 +147,6 @@ var app = function() {
             isPlaying = -1;
         }
     }
+
 }( jQuery );
 
